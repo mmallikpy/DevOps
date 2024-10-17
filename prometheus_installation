@@ -1,0 +1,59 @@
+wget https://github.com/prometheus/prometheus/releases/download/v3.0.0-beta.1/prometheus-3.0.0-beta.1.linux-amd64.tar.gz    [It can be change, you can use it last version ]
+tar -xzf prometheus-3.0.0-beta.1.linux-amd64.tar.gz
+mv prometheus-3.0.0-beta.1.linux-amd64 /etc/prometheus
+
+nano /etc/systemd/system/prometheus.service
+
+
+[Unit]
+Description=Prometheus
+Wants=network-online.target
+After=network-online.target
+[Service]
+ExecStart=/etc/prometheus/prometheus --config.file=/etc/prometheus/prometheus.yml
+Restart=always
+[Install]
+WantedBy=multi-user.target
+
+systemctl daemon-reload
+systemctl restart prometheus
+systemctl enable prometheus
+systemctl status prometheus
+
+
+#--------------------Add node_exporter in graphana --------------------------------
+vi /etc/prometheus/prometheus.yml
+
+# my global config
+global:
+  scrape_interval: 15s 
+
+scrape_configs:
+  - job_name: "prometheus-server"
+    static_configs:
+      - targets: ["localhost:9100"]
+
+
+#--------------------Install node_exporter in Server --------------------------------
+wget https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz  [It can be change, you can use it last version ]
+tar -xzf node_exporter-1.8.2.linux-amd64.tar.gz
+mv node_exporter-1.8.2.linux-amd64 /etc/node_exporter
+
+
+nano /etc/systemd/system/node_exporter.service
+
+[Unit]
+Description=Node Exporter
+Wants=network-online.target
+After=network-online.target
+[Service]
+ExecStart=/etc/node_exporter/node_exporter
+Restart=always
+[Install]
+WantedBy=multi-user.target
+
+
+systemctl daemon-reload
+systemctl start node_exporter
+systemctl enable node_exporter
+systemctl status node_exporter
