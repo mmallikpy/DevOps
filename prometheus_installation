@@ -57,3 +57,10 @@ systemctl daemon-reload
 systemctl start node_exporter
 systemctl enable node_exporter
 systemctl status node_exporter
+
+
+
+
+https://sbcode.net/prometheus/snmp-cisco-switch/
+https://www.youtube.com/watch?app=desktop&v=bcXihhdtlek
+https://grafana.com/docs/agent/latest/flow/reference/components/prometheus.exporter.snmp/
