@@ -1,1 +1,34 @@
 
+windows_os_info{job=~"Network_AD"} * on(instance) group_right(product) windows_cs_hostname
+
+time() - windows_system_system_up_time{job=~"Network_AD"}
+
+windows_cs_logical_processors{job=~"Network_AD"} - 0
+
+avg by (instance) (windows_cpu_core_frequency_mhz{job=~"Network_AD"})
+
+100 - (avg by (instance) (irate(windows_cpu_time_total{job=~"Network_AD",mode="idle"}[2m])) * 100)
+
+windows_cs_physical_memory_bytes{job=~"Network_AD"} - 0
+
+100 - 100 * windows_os_physical_memory_free_bytes{job=~"Network_AD"} / windows_cs_physical_memory_bytes{job=~"Network_AD"}
+
+1 - (windows_logical_disk_free_bytes{job=~"Network_AD",volume=~"C:"}/windows_logical_disk_size_bytes{job=~"Network_AD",volume=~"C:"})
+
+max by (instance) (1-windows_logical_disk_free_bytes{job=~"Network_AD"}/windows_logical_disk_size_bytes{job=~"Network_AD"})
+
+windows_os_processes{job=~"Network_AD"}
+
+sum by (instance) (windows_service_state{job=~"Network_AD",state=~"running"})
+
+# RAM usages
+100 - 100 * windows_os_physical_memory_free_bytes{instance='172.16.200.60:9183'} / windows_cs_physical_memory_bytes{instance='172.16.200.60:9183'}
+
+# CPU usages
+100 - (avg by (instance) (irate(windows_cpu_time_total{instance='172.16.200.60:9183',mode="idle"}[5m])) * 100)
+
+# Total RAM
+windows_cs_physical_memory_bytes{instance="172.16.200.60:9183"} - 0
+
+# Total CPU
+windows_cs_logical_processors{instance="172.16.200.60:9183"}
