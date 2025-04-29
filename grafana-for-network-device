@@ -1,0 +1,27 @@
+#----------------------------------For-Network-Device-----------------------------------------
+# Download
+rate(ifHCInOctets{instance="172.16.200.2",ifName="Gi0/0/1"}[$__rate_interval])*8
+
+# Upload
+irate(ifHCOutOctets{instance="172.16.200.2",ifName="Gi0/0/1"}[$__rate_interval]) * 8
+
+# Port speed
+ifHighSpeed{instance="172.16.200.2",ifName="Gi0/0/1"}
+
+# Up interface count
+count(ifOperStatus{job="snmp", instance="172.16.201.2"} == 1)
+
+# Down interface count
+count(ifOperStatus{job="snmp", instance="172.16.201.2"} == 2)
+
+# Up devices
+count(up==1)
+
+# Down devices
+count(up{job="snmp"} == 0)
+
+# Device uptime
+sysUpTime{job="snmp"} * 10
+
+# Total up interface
+count(ifOperStatus{job="snmp"} == 1)
