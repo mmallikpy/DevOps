@@ -1,0 +1,160 @@
+# Cisco Total events
+
+FROM linux*
+| sort @timestamp DESC
+| WHERE event.module == "cisco"
+AND `message` NOT LIKE "*block_attack_port denied*"
+| STATS COUNT(*), switch = VALUES(log.source.address) BY message
+
+# Login Success
+
+FROM linux*
+| SORT @timestamp DESC
+| STATS col0 = VALUES(log.source.address), col1 = VALUES(event.severity) BY event.original.keyword
+| WHERE event.original.keyword LIKE "*Login Success*" OR `event.original.keyword` LIKE "*vty*"
+
+
+# Event's
+
+FROM linux*
+| sort @timestamp DESC
+| WHERE event.module == "cisco"
+AND `message` NOT LIKE "*block_attack_port denied*"
+| STATS COUNT(*) 
+
+# Flapping
+FROM linux*
+| SORT @timestamp DESC
+| STATS col0 = VALUES(log.source.address), col1 = VALUES(event.severity) BY event.original.keyword
+| WHERE event.original.keyword LIKE "*flapping between*"
+
+# Flaaping_by_MAC
+
+FROM linux*
+| sort @timestamp DESC
+| WHERE message LIKE "*flapping*"
+| GROK message "Host %{MAC:mac} in vlan %{INT:vlan} is flapping between port %{NOTSPACE:port_1} and port %{NOTSPACE:port_2}"
+| GROK log.source.address "%{IP:ip}:%{INT:port}"
+| KEEP mac, vlan,  ip, port_1, port_2
+//| STATS count = count(*), port_1=VALUES(port_1), port_2 = VALUES(port_2) BY ip
+| STATS count = count(*) , port_1=VALUES(port_1), ip = VALUES(ip) BY mac
+
+
+# Flaaping_by_Switch
+
+FROM linux*
+| sort @timestamp DESC
+| WHERE message LIKE "*flapping*"
+| GROK message "Host %{MAC:mac} in vlan %{INT:vlan} is flapping between port %{NOTSPACE:port_1} and port %{NOTSPACE:port_2}"
+| GROK log.source.address "%{IP:ip}:%{INT:port}"
+| KEEP mac, vlan,  ip, port_1, port_2
+| STATS count = count(*) , port_1=VALUES(port_1), ip = VALUES(ip) BY ip
+
+# Interface Up
+
+FROM linux*
+| SORT @timestamp DESC
+| STATS col0 = VALUES(log.source.address), col1 = VALUES(event.severity) BY event.original.keyword
+| WHERE event.original.keyword LIKE "*to up"
+
+# Interface Down
+
+FROM linux*
+| SORT @timestamp DESC
+| STATS col0 = VALUES(log.source.address), col1 = VALUES(event.severity) BY event.original.keyword
+| WHERE event.original.keyword LIKE "*to down"
+
+# Message Count
+
+FROM linux*
+| SORT @timestamp
+| KEEP message, log.source.address
+| DISSECT log.source.address "%{IP}:%{port}" 
+| STATS Device_IP = VALUES(IP), Totar_Events = COUNT(*) BY Message = message
+| SORT Totar_Events DESC
+
+
+
+# Attack_Aamra_Router
+
+FROM linux*
+| SORT @timestamp DESC
+| KEEP log.source.address, message, @timestamp
+| WHERE  `log.source.address`=="172.16.200.3:52643"
+AND `message` LIKE "*block_attack_port denied*"
+| DISSECT message "%{interface}: %{process}: list %{rule} %{action} %{protocol} %{mac} %{src_ip}(%{src_port}) -> %{dst_ip}(%{dst_port}), %{packet_count} %{packet_word}"
+| WHERE src_ip IS NOT NULL OR dst_port IS NOT NULL
+| STATS COUNT(*), port = VALUES(dst_ip), src_ip = VALUES(src_ip)  BY dst_port
+
+
+# Attack_BracNet_Router
+FROM linux*
+| SORT @timestamp DESC
+| KEEP log.source.address, message, @timestamp
+| WHERE  `log.source.address`=="172.16.200.2:59792"
+AND `message` LIKE "*block_attack_port denied*"
+| DISSECT message "%{interface}: %{process}: list %{rule} %{action} %{protocol} %{mac} %{src_ip}(%{src_port}) -> %{dst_ip}(%{dst_port}), %{packet_count} %{packet_word}"
+| WHERE src_ip IS NOT NULL OR dst_port IS NOT NULL
+| STATS COUNT(*), port = VALUES(dst_ip), src_ip = VALUES(src_ip) BY dst_port
+
+# Attack
+
+FROM linux*
+| WHERE `message` LIKE "*block_attack_port denied*"
+| STATS COUNT(*)
+
+
+# Power Supply error
+
+FROM logstash-*
+| sort @timestamp DESC
+| WHERE event.module == "cisco"
+AND `message` NOT LIKE "*block_attack_port denied*"
+| KEEP event.original.keyword, log.source.address
+| WHERE event.original.keyword LIKE "*power supply*"
+| DISSECT log.source.address """%{a}:%{b}"""
+| STATS Count = COUNT(*), Device = VALUES(a) BY event.original.keyword
+
+
+# Login failed in cisco device
+
+FROM logstash-*
+| SORT @timestamp
+| KEEP event.original.keyword, log.source.address
+| WHERE event.original.keyword LIKE "*Login failed*"
+| DISSECT log.source.address "%{IP}:%{port}"
+| GROK event.original.keyword 
+  "Login failed \\[user: %{DATA:user}\\] \\[Source: %{IP:source}\\] \\[localport: %{INT:localport}\\] \\[Reason: %{DATA:reason}\\] at %{GREEDYDATA:log_timestamp}"
+| STATS failure_count = COUNT(*), source = VALUES(source), User = VALUES(user), device = VALUES(IP)  BY source
+| SORT failure_count DESC
+
+
+# FAN Error
+
+FROM logstash-*
+| sort @timestamp DESC
+| WHERE event.module == "cisco"
+AND `message` NOT LIKE "*block_attack_port denied*"
+| KEEP event.original.keyword, log.source.address
+| WHERE event.original.keyword LIKE "*System fan*"
+| GROK event.original.keyword "Switch 1: System fan %{INT:fan_id} %{GREEDYDATA:incident}"
+| GROK log.source.address "%{IP:Ip}:%{INT:Port}"
+| STATS  count = COUNT(*), Device = VALUES(Ip), incident = VALUES(incident) BY fan_id
+
+
+# Date: 04_06_2026 
+# ASA longs
+
+FROM logs*
+| KEEP message, log.source.address
+| WHERE message NOT LIKE "*block_attack_port*"
+| WHERE message NOT LIKE "*access-list*"
+| WHERE message NOT LIKE "*changed state to up*"
+| WHERE message NOT LIKE "*changed state to down*"
+| WHERE message NOT LIKE "*power supply*"
+| WHERE message NOT LIKE "*flapping between*"
+| WHERE message NOT LIKE "*Cisco Smart License*"
+| WHERE message NOT LIKE "*SSH2 Session*"
+| WHERE message NOT LIKE "Login failed*"
+| WHERE message NOT LIKE "Login Success*"
+| WHERE message NOT LIKE "*tty*"
