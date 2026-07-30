@@ -58,4 +58,7 @@ these
 
 ### Examples
 - Step 1: Create a rule
-<img src="Image/Granfan_alert.png" alt="Project Logo" width="300" align="center">
+<img src="Image/Granfan_alert.png" alt="Project Logo" width="600" align="center">
+<img src="Image/Granfan_alert_2.png" alt="Project Logo" width="600" align="center">
+<img src="Image/Granfan_alert_3.png" alt="Project Logo" width="600" align="center">
+<img src="Image/Granfan_alert_4.png" alt="Project Logo" width="600" align="center">
