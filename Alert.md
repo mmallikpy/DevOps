@@ -39,3 +39,24 @@ notification gets sent — the actual destination and how the message is deliver
     - VictorOps / Splunk On-Call
     - Google Chat
     - Alertmanager (forward to another Alertmanager instance)
+
+### What is a Notification Policy?
+
+```grafana
+A notification policy is the routing logic that decides which contact point handles 
+which alert. It matches alerts based on their labels and routes them to the appropriate 
+contact point, with control over grouping, timing, and repetition.
+```
+
+### What is a Notification Template?
+```grafana
+A notification template controls what the notification message actually looks like — 
+the text, formatting, and content structure of the alert notification sent to a contact 
+point. Grafana uses Go templating (the same engine as Prometheus Alertmanager) to build 
+these
+```
+
+### Examples
+    Step 1: Create a rule
+
+    <img src="./image/Granfan_alert.png" alt="Project Logo" width="300" align="center">
