@@ -62,3 +62,63 @@ these
 <img src="Image/Granfan_alert_2.png" alt="Project Logo" width="600" align="center">
 <img src="Image/Granfan_alert_3.png" alt="Project Logo" width="600" align="center">
 <img src="Image/Granfan_alert_4.png" alt="Project Logo" width="600" align="center">
+
+- Step 2: Create the Title "dynamic_title"
+
+```grafana
+
+{{ define "dynamic_title" }}
+
+{{ if eq .CommonLabels.alertname "High_CPU" }}
+    {{ if eq .Status "firing" }}
+		🔥 HIGH CPU ALERT
+    {{ else }}
+		🟢 NORMAL CPU ALERT
+    {{ end }}
+{{ end }}
+
+{{ end }}
+```
+
+- Step 3: Create message "telegram_master"
+
+```grafana
+{{ define "telegram_master" }}
+
+{{ if eq .CommonLabels.alertname "High_CPU" }}
+  {{ template "High_CPU" . }}
+
+{{ end }}
+
+{{ end }}
+```
+
+- Step 4: Create template "High_CPU"
+
+```grafana
+{{ define "High_CPU" }}
+
+{{ $cpu := (index .Alerts 0).Values.A }}
+
+{{ if eq .Status "firing" }}
+
+Device: {{ (index .Alerts 0).Labels.instance }}{{ "\n" }}
+Job: {{ (index .Alerts 0).Labels.job }}{{ "\n" }}
+CPU Usage: {{ printf "%.1f" $cpu }}%{{ "\n" }}
+Triggered at: {{ (index .Alerts 0).StartsAt }}{{ "\n" }}
+
+Status: FIRING
+
+{{ else }}
+
+Device: {{ (index .Alerts 0).Labels.instance }}{{ "\n" }}
+Job: {{ (index .Alerts 0).Labels.job }}{{ "\n" }}
+CPU Usage: {{ printf "%.1f" $cpu }}%{{ "\n" }}
+Recovered at: {{ (index .Alerts 0).EndsAt }}{{ "\n" }}
+
+Status: RESOLVED
+
+{{ end }}
+
+{{ end }}
+```
