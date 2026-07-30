@@ -58,4 +58,4 @@ these
 
 ### Examples
 - Step 1: Create a rule
-<img src="./image/Granfan_alert.png" alt="Project Logo" width="300" align="center">
+<img src="Image/Granfan_alert.png" alt="Project Logo" width="300" align="center">
